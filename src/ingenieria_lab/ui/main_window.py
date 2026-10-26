@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
 from ingenieria_lab.storage.workspace import Workspace
 from ingenieria_lab.ui.common import STYLE, label, button, heading, panel, error
 from ingenieria_lab.ui.study import Dashboard, SubjectsPage, NotesPage, AgendaPage
+from ingenieria_lab.ui.semester import SemesterPage
 from ingenieria_lab.ui.laboratories import (
     MathPage,
     ToolsPage,
@@ -31,9 +32,13 @@ class MainWindow(QMainWindow):
     def __init__(self, store=None):
         super().__init__()
         self.store = store if store is not None else Workspace()
-        self.setWindowTitle("Ingeniería Lab — Tu compañero de carrera · v0.2")
-        self.resize(1320, 850)
+        self.setWindowTitle("Ingeniería Lab — Mi semestre · v0.3")
         self.setMinimumSize(1020, 700)
+        available = self.screen().availableGeometry()
+        self.resize(
+            min(1320, max(1020, available.width() - 64)),
+            min(850, max(700, available.height() - 64)),
+        )
         self.setStyleSheet(STYLE)
         root = QWidget()
         self.setCentralWidget(root)
@@ -50,6 +55,7 @@ class MainWindow(QMainWindow):
         sl.addSpacing(26)
         self.names = [
             "Inicio",
+            "Mi semestre",
             "Mi carrera",
             "Calculadora",
             "Herramientas",
@@ -64,7 +70,7 @@ class MainWindow(QMainWindow):
         self.nav.addItems(self.names)
         sl.addWidget(self.nav, 1)
         sl.addWidget(
-            label("ELECTROMECÁNICA\nOrientación electrónica\nv0.2 · local y personal")
+            label("ELECTROMECÁNICA\n3.er año · 2.º semestre\nv0.3 · Linux Mint")
         )
         layout.addWidget(side)
         self.stack = QStackedWidget()
@@ -74,8 +80,10 @@ class MainWindow(QMainWindow):
         self.subjects = SubjectsPage(self.store, self.navigate, self.open_notes)
         self.dashboard = Dashboard(self.store, self.navigate)
         self.math = MathPage()
+        self.semester = SemesterPage(self.store)
         self.pages = [
             self.dashboard,
+            self.semester,
             self.subjects,
             self.math,
             ToolsPage(),
@@ -92,12 +100,18 @@ class MainWindow(QMainWindow):
             wl.addWidget(page)
             self.stack.addWidget(wrapper)
         self.nav.currentRowChanged.connect(self.select_page)
-        self.nav.setCurrentRow(0)
+        self.nav.setCurrentRow(self.names.index("Mi semestre"))
         for page in (self.notes, self.agenda, self.subjects):
             page.changed.connect(self.dashboard.refresh)
+        self.semester.changed.connect(self.notes.refresh)
+        self.semester.changed.connect(self.dashboard.refresh)
         self.save_shortcut = QShortcut(QKeySequence.StandardKey.Save, self)
         self.save_shortcut.activated.connect(
-            lambda: self.notes.save() if self.stack.currentIndex() == 6 else None
+            lambda: (
+                self.notes.save()
+                if self.nav.currentItem().text() == "Apuntes"
+                else None
+            )
         )
         self.statusBar().showMessage(
             "Listo · cálculos en SI salvo indicación · Ctrl+S guarda el apunte abierto"
@@ -154,7 +168,7 @@ class MainWindow(QMainWindow):
         )
         layout.addWidget(
             label(
-                "Los simuladores son modelos lineales ideales para estudiar; no incluyen un editor de circuitos SPICE, CAD, redes industriales reales ni selección normativa de protecciones. Las calculadoras muestran sus hipótesis. El catálogo cubre la carrera; las herramientas se concentran en fundamentos compartidos."
+                "Mi semestre reúne 30 herramientas para tus cinco materias actuales y Electrónica Analógica. Combina modelos educativos, propiedades reales de CoolProp y dos circuitos ejecutables con ngspice. No incluye editor libre de esquemas ni selección normativa completa de protecciones. Cada herramienta muestra sus hipótesis y unidades."
             )
         )
         layout.addWidget(
@@ -229,9 +243,12 @@ class MainWindow(QMainWindow):
         if not self.notes.maybe_save():
             event.ignore()
             return
-        if self.math.job is not None and self.math.job.isRunning():
+        if any(
+            job is not None and job.isRunning()
+            for job in (self.math.job, self.semester.job)
+        ):
             self.statusBar().showMessage(
-                "Esperá a que finalice el cálculo antes de cerrar (máximo 8 segundos)."
+                "Esperá a que finalice el cálculo antes de cerrar (máximo 20 segundos)."
             )
             event.ignore()
             return

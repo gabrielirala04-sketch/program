@@ -30,7 +30,10 @@ FUNCTIONS = {
 FUNCTIONS["abs"] = sp.Abs
 
 
-def expression(text: str):
+def expression(text: str, variables=None):
+    symbols = {"x": X, "pi": sp.pi, "e": sp.E, "I": sp.I}
+    if variables:
+        symbols.update(variables)
     if len(text) > 180:
         raise ValueError("Usá expresiones de hasta 180 caracteres")
     try:
@@ -51,8 +54,8 @@ def expression(text: str):
             if not math.isfinite(node.value) or abs(node.value) > 1e12:
                 raise ValueError("Constante fuera de rango")
             return sp.Rational(str(node.value))
-        if isinstance(node, ast.Name) and node.id in ("x", "pi", "e", "I"):
-            return {"x": X, "pi": sp.pi, "e": sp.E, "I": sp.I}[node.id]
+        if isinstance(node, ast.Name) and node.id in symbols:
+            return symbols[node.id]
         if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.UAdd, ast.USub)):
             value = visit(node.operand, depth + 1)
             return value if isinstance(node.op, ast.UAdd) else -value

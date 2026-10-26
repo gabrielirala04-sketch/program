@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-26",
+  "retrieval": "Official repository source documents on GitHub; plus installed SymPy 1.14.0 Beam docstring",
+  "documents": [
+    {
+      "document": "circuitjs",
+      "bytes": 7849,
+      "sha256": "f93efa8df3ce1e090b86ae26a933d7d44d1c5ed477d3b3d24023ff4e96712669"
+    },
+    {
+      "document": "coolprop",
+      "bytes": 22688,
+      "sha256": "4abb75a4ff1a218fb3edfbccace1c350696eeee34e8cf5ae5d2cae785920c178"
+    },
+    {
+      "document": "kicad",
+      "bytes": 11495,
+      "sha256": "a7a0822d805a5dd033d9a69d7020f45570403f002f54d525bcc4c8a034ab6374"
+    },
+    {
+      "document": "ngspice",
+      "bytes": 1901,
+      "sha256": "cb53e3beb64ad2cc31076dd77b08773c69c7581b5ec469d83c22d6c9d6af49fd"
+    },
+    {
+      "document": "octave",
+      "bytes": 4972,
+      "sha256": "6699820fa0e78ef3b8ea274c252e06a1554fa78fb9f5163e08f60edfbd076eac"
+    },
+    {
+      "document": "qucs_s",
+      "bytes": 3856,
+      "sha256": "885500911ea2d8182e1667fdf2aeea80ed47bf72b739d98863fba6462f1c3b3c"
+    },
+    {
+      "document": "scipy",
+      "bytes": 28709,
+      "sha256": "65a996ae198c510651c3e1b37fbf0ff07cc725673f8c0be3402e7d2884033b81"
+    },
+    {
+      "document": "sympy_beam",
+      "bytes": 123,
+      "sha256": "0f92941d382416aaf87b995c87c7c8f4a1087e95477e41319c00bead4a5315be"
+    },
+    {
+      "document": "sympy_beam_installed",
+      "bytes": 3899,
+      "sha256": "a275144f76101ddf00ce3182bd64f541f18433d829fba8ab1db8af068b6021bb"
+    }
+  ]
+}

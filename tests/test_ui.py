@@ -22,8 +22,9 @@ def window(app, tmp_path):
     w.show()
     app.processEvents()
     yield w
-    if w.math.job is not None:
-        w.math.job.wait(10000)
+    for job in (w.math.job, w.semester.job):
+        if job is not None:
+            job.wait(22000)
     w.notes.dirty = False
     w.close()
     app.processEvents()
@@ -39,15 +40,15 @@ def test_navigation_and_models(window, app):
         window.navigate(name)
         app.processEvents()
         assert window.stack.currentIndex() == i
-    tools = window.pages[3]
+    tools = window.pages[window.names.index("Herramientas")]
     for i in range(tools.choice.count()):
         tools.choice.setCurrentIndex(i)
         assert "=" in tools.output.toPlainText()
-    models = window.pages[4]
+    models = window.pages[window.names.index("Simuladores")]
     for i in range(models.choice.count()):
         models.choice.setCurrentIndex(i)
         assert models.data is not None
-    signals = window.pages[5]
+    signals = window.pages[window.names.index("Señales")]
     for i in range(signals.wave.count()):
         signals.wave.setCurrentIndex(i)
         signals.refresh()
@@ -122,7 +123,7 @@ def test_math_worker_result_and_signal_invalid_input(window, app):
             break
     app.processEvents()
     assert "3*x**2" in m.output.toPlainText()
-    signals = window.pages[5]
+    signals = window.pages[window.names.index("Señales")]
     signals.fields["sample_rate_hz"].setValue(50)
     signals.refresh()
     assert signals.t is None and "superar 2 veces" in signals.results.text()
@@ -138,3 +139,75 @@ def test_subject_filter_and_status(window):
     assert window.store.statuses()["Electrónica I"] == "Cursando"
     s.search.setText("sin coincidencias")
     assert s.table.rowCount() == 0 and s.selected is None
+
+
+def test_semester_forms_filter_and_default_landing(window, app):
+    from ingenieria_lab.semester.registry import TOOLS, BY_KEY
+
+    s = window.semester
+    assert window.nav.currentItem().text() == "Mi semestre"
+    visited = set()
+    for i in range(s.subject.count()):
+        s.subject.setCurrentIndex(i)
+        for j in range(s.selection.count()):
+            s.selection.setCurrentIndex(j)
+            app.processEvents()
+            key = s.selection.currentData()
+            visited.add(key)
+            assert set(s.fields) == {f.key for f in BY_KEY[key].inputs}
+    assert len(visited) == len(TOOLS) == 30
+    s.kind.setCurrentText("Calculadora")
+    assert all(
+        BY_KEY[s.selection.itemData(i)].kind == "Calculadora"
+        for i in range(s.selection.count())
+    )
+
+
+def test_semester_calculate_save_and_csv(window, app, tmp_path, monkeypatch):
+    import csv
+    from PySide6.QtWidgets import QFileDialog
+
+    s = window.semester
+    s.run()
+    for _ in range(440):
+        QTest.qWait(50)
+        if not s.job.isRunning():
+            break
+    app.processEvents()
+    assert s.data is not None and s.compute.isEnabled()
+    assert "Reacción izquierda" in s.output.toPlainText()
+    s.save_note()
+    note = window.store.notes()[0]
+    assert (
+        note["subject"] == "Resistencia de Materiales"
+        and "Hipótesis" in note["body"]
+        and "Luz L [m]" in note["body"]
+    )
+    path = tmp_path / "beam.csv"
+    monkeypatch.setattr(
+        QFileDialog, "getSaveFileName", lambda *args: (str(path), "CSV")
+    )
+    s.export_csv()
+    with path.open() as file:
+        rows = list(csv.reader(file))
+    assert "Posición [m]" in rows[0][0] and len(rows) > 800
+    s.fields["L"].setValue(3)
+    assert (
+        s.data is None
+        and not s.export_button.isEnabled()
+        and not s.note_button.isEnabled()
+    )
+
+
+def test_semester_worker_reports_invalid_domain(window, app):
+    s = window.semester
+    s.subject.setCurrentText("Cálculo Numérico")
+    s.fields["expr"].setText("sqrt(-1)")
+    s.run()
+    for _ in range(440):
+        QTest.qWait(50)
+        if not s.job.isRunning():
+            break
+    app.processEvents()
+    assert s.data is None and "No se pudo" in s.feedback.text()
+    assert s.compute.isEnabled()

@@ -1,4 +1,6 @@
-# Guía rápida de Ingeniería Lab
+# Guía de herramientas generales (conservadas de v0.2)
+
+Para los nuevos laboratorios de v0.3, consultá [Prácticas del semestre](PRACTICAS-v0.3.md) y [la investigación](INVESTIGACION-v0.3.md).
 
 ## Calculadora matemática
 

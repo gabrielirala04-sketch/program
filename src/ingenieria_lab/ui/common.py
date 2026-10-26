@@ -28,8 +28,16 @@ def button(text, callback, primary=False):
     return widget
 
 
+class CompactDoubleSpinBox(QDoubleSpinBox):
+    def textFromValue(self, value):
+        text = super().textFromValue(value)
+        if self.decimals():
+            text = text.rstrip("0").rstrip(self.locale().decimalPoint())
+        return text
+
+
 def spin(value=0, minimum=-1e9, maximum=1e9, decimals=6):
-    widget = QDoubleSpinBox()
+    widget = CompactDoubleSpinBox()
     widget.setDecimals(decimals)
     widget.setRange(minimum, maximum)
     widget.setValue(value)

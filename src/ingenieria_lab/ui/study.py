@@ -35,7 +35,7 @@ class Dashboard(QWidget):
         heading(
             layout,
             "Tu espacio de ingeniería",
-            "Electromecánica · orientación electrónica",
+            "Electromecánica · 3.er año, 2.º semestre · Linux Mint Cinnamon",
         )
         hero, hl = panel()
         hl.addWidget(label("Aprender. Experimentar. Conectar.", "section"))
@@ -46,7 +46,7 @@ class Dashboard(QWidget):
         )
         actions = QHBoxLayout()
         actions.addWidget(
-            button("Abrir simuladores", lambda: navigate("Simuladores"), True)
+            button("Abrir mi semestre", lambda: navigate("Mi semestre"), True)
         )
         actions.addWidget(button("Escribir un apunte", lambda: navigate("Apuntes")))
         actions.addStretch()
