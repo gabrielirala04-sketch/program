@@ -1,0 +1,14 @@
+@echo off
+setlocal
+cd /d "%~dp0"
+if not exist ".venv\Scripts\python.exe" (
+    echo Ejecuta instalar_windows.bat primero.
+    pause
+    exit /b 1
+)
+".venv\Scripts\python.exe" main.py
+if errorlevel 1 (
+    echo Revisa el error anterior. Puede ser necesario repetir instalar_windows.bat.
+    pause
+    exit /b 1
+)
